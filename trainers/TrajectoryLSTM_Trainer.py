@@ -127,7 +127,7 @@ class TrajectoryLSTM_Train:
         """
         self.model.load_state_dict(torch.load(load_path))
         print(f"Model loaded from {load_path}")
-        
+
 if __name__ == "__main__":
     import sys
     import os
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     # Importing necessary components
     from config.config_loader import LoadConfig
     from models.TrajectoryLSTM import TrajectoryLSTM
-    from dataset.lstm_dataset import TrajectoryDataset, create_dataloader  # Updated import
+    from dataset.lstm_dataset import create_dataloader  # Updated import
 
     # Loading the configuration file
     config = LoadConfig(config_path)

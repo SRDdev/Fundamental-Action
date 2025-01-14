@@ -178,6 +178,12 @@ class TrajectoryDataset(Dataset):
         self.seq_len = seq_len
         self.input_size = input_size
         self.target_size = target_size
+
+        # Check the dataset's shape
+        print(f"Columns in dataset: {self.data.columns}")
+        print(f"Shape of dataset: {self.data.shape}")
+
+        # Create sequences from the data
         self.samples = self.create_sequences()
 
     def create_sequences(self):
@@ -188,10 +194,17 @@ class TrajectoryDataset(Dataset):
         
         # For each row, generate a sequence with a fixed seq_len
         for i in range(len(self.data) - self.seq_len):
-            # Input: Take 'seq_len' rows as input
-            input_seq = self.data.iloc[i:i + self.seq_len, :-1].values
-            # Target: Take the last row's target values (p_x, p_y, p_z, p_c)
-            target = self.data.iloc[i + self.seq_len - 1, -1]
+            # Input: Take 'seq_len' rows as input (all columns, including 'p_c')
+            input_seq = self.data.iloc[i:i + self.seq_len, :].values  # Take all columns
+            
+            # Ensure the input sequence has the correct number of features
+            if input_seq.shape[1] != self.input_size:
+                print(f"Warning: Expected {self.input_size} features, but got {input_seq.shape[1]} features.")
+                print(f"Input sequence (first row): {input_seq[0]}")
+
+            # Target: Take the last row's target value ('p_c')
+            target = self.data.iloc[i + self.seq_len - 1, -1]  # The last column is 'p_c'
+            
             sequences.append((input_seq, target))
         
         return sequences
@@ -206,9 +219,10 @@ class TrajectoryDataset(Dataset):
         target_tensor = torch.tensor(target, dtype=torch.float32)
         return input_tensor, target_tensor
 
+
 def create_dataloader(csv_file, seq_len, batch_size, input_size=10, target_size=4, shuffle=True):
     """
-    Creates a DataLoader for the given dataset.
+    Create a DataLoader for training and testing the model.
     """
     dataset = TrajectoryDataset(csv_file, seq_len, input_size, target_size)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
