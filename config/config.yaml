@@ -1,0 +1,20 @@
+TrajectoryNet:
+  data:
+    file_path: "dataset/sample_data.csv"
+    save_dir: "./checkpoints"
+
+  model:
+    input_size: 6
+    hidden_size: 128
+    output_size: 320
+
+  training:
+    batch_size: 8
+    learning_rate: 0.001
+    weight_decay: 1e-4
+    num_epochs: 50
+    early_stopping_patience: 5
+
+device: "cuda"
+
+wandb: False
