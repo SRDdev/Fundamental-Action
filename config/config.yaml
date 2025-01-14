@@ -13,10 +13,30 @@ TrajectoryNet:
     batch_size: 8
     learning_rate: 0.001
     weight_decay: 1e-4
-    num_epochs: 50
+    num_epochs: 100
     early_stopping_patience: 5
     save_dir: "./checkpoints"
 
+TrajectoryLSTM:
+  input_size: 10
+  hidden_size: 512
+  num_layers: 3
+  output_size: 4
+  dropout: 0.2
+  
+  data:
+    file_path: "dataset/reshaped_dataset.csv"
+    save_dir: "./checkpoints"
+
+  training:
+    batch_size: 8
+    target_size: 4 
+    input_size: 10
+    seq_len: 80
+    epochs: 100
+    learning_rate: 0.001
+
+
 device: "cuda"
 
-wandb: True
+wandb: False
