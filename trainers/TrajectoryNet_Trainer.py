@@ -4,6 +4,7 @@ import torch.optim as optim
 from tqdm import tqdm
 import os
 import wandb
+from .API import WANDB_API_KEY
 
 class TrajectoryNet_Train:
     def __init__(self, model, train_loader, val_loader, criterion, optimizer, config, device='cpu', save_dir='./checkpoints'):
@@ -30,6 +31,7 @@ class TrajectoryNet_Train:
         os.makedirs(save_dir, exist_ok=True)
         self.best_loss = float('inf')
         self.config = config
+        self.name = config.get("TrajectoryNet.training.name")
         
         # Access the training configuration
         self.num_epochs = config.get("TrajectoryNet.training.num_epochs")
@@ -37,7 +39,11 @@ class TrajectoryNet_Train:
         
         # Initialize Weights and Biases if enabled in the config
         if self.config.get("wandb", False):
-            wandb.init(project=self.config.get("project_name", "trajectory-prediction"), config=self.config)
+            # Log into wandb before initializing the run
+            wandb.login(key=WANDB_API_KEY)
+
+            # Now initialize the wandb run
+            run = wandb.init(project="Fundamental_Actions", config=self.config,name=self.name)
             self.wandb_enabled = True
         else:
             self.wandb_enabled = False
