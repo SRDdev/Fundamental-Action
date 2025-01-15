@@ -1,3 +1,7 @@
+"""
+Author: Shreyas Dixit
+This file loads configs
+"""
 import yaml
 
 class LoadConfig:

@@ -1,3 +1,5 @@
+# This can be used for TrajectoryNet and DenseTrajectoryNet
+#------------------------------------------------------------------#
 TrajectoryNet:
   data:
     file_path: "dataset/dataset.csv"
@@ -7,21 +9,25 @@ TrajectoryNet:
     input_size: 6
     hidden_size: 128
     output_size: 320
-    dropout: 0.25
+    dropout: 0.01
 
   training:
-    name: "TrajectoryNet_7"
-    batch_size: 256
-    learning_rate: 0.001
+    name: "Large_TrajectoryNet"
+    batch_size: 8
+    base_lr: 0.001         # Base learning rate for warmup
+    learning_rate: 1e-3   # Main learning rate
     weight_decay: 1e-3
     num_epochs: 500
+    warmup_epochs: 50      # Number of warmup epochs
+    grad_clip_value: 5.0   # Gradient clipping value
     early_stopping_patience: 500
     save_dir: "./checkpoints"
+#---------------------------------------------------#
 
 TrajectoryLSTM:
   input_size: 10
   hidden_size: 512
-  num_layers: 3
+  num_layers: 5
   output_size: 4
   dropout: 0.2
   
@@ -34,7 +40,7 @@ TrajectoryLSTM:
     target_size: 4 
     input_size: 10
     seq_len: 80
-    epochs: 1000
+    epochs: 500
     learning_rate: 0.001
 
 

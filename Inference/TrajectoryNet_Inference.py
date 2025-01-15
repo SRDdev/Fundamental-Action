@@ -1,3 +1,9 @@
+"""
+Author: Shreyas Dixit
+
+This script loads a pre-trained TrajectoryNet model and makes predictions on a sample input.
+"""
+
 import sys
 import os
 import torch
@@ -8,7 +14,6 @@ import json
 import yaml
 import csv
 
-# Ensure proper path loading for modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from models.TrajectoryNet import TrajectoryNet
@@ -70,7 +75,6 @@ def predict(model, input_data, input_scaler, target_scaler, device='cpu', use_sc
     """
     model.to(device)
 
-    # If using scalers, scale the input data
     if use_scalers:
         input_data = input_scaler.transform(input_data)
 
@@ -79,7 +83,6 @@ def predict(model, input_data, input_scaler, target_scaler, device='cpu', use_sc
     with torch.no_grad():
         output = model(input_tensor)
 
-    # Reverse the scaling on the output if scalers are used
     if use_scalers:
         predictions = target_scaler.inverse_transform(output.cpu().numpy())
     else:
@@ -99,14 +102,10 @@ def save_predictions(predictions, output_file='predictions.csv'):
     Returns:
         None
     """
-
-    # Reshape the predictions to 80x4
     reshaped_predictions = predictions.reshape(80, 4)
-
-    # Save the predictions as a CSV file
     with open(output_file, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(['x', 'y', 'z', 'c'])  # Write the header
+        writer.writerow(['x', 'y', 'z', 'c'])
         writer.writerows(reshaped_predictions)
 
 def main():
@@ -122,33 +121,28 @@ def main():
     model_dir = config.get('TrajectoryNet.training.save_dir')
     model_path = f'.{model_dir}/best_model.pth'
     
-    # Load model
     model = load_model(model_path, config, device)
 
-    # Load input and output scalers if using them
     if USE_SCALERS:
         input_scaler, target_scaler = load_scalers(model_dir)
     else:
         input_scaler = target_scaler = None
 
-    # Example input: Locations of 2 objects (6 features)
+
     input_data = np.array([[-202.9524806,-828.6285971,41.35059464,-370.808101,-735.661648,104.0947533]])
     print(input_data)
-    # Make prediction
+
     predictions = predict(model, input_data, input_scaler, target_scaler, device, use_scalers=USE_SCALERS)
 
-    # Print the predicted trajectory
+
     print("-"*100)
     print(predictions.shape)
     print("-"*100)
-    # Reshape the predictions to 80x4
     reshaped_predictions = predictions.reshape(80, 4)
 
-    # Print each of the 80 predictions on a single line
     for i, pred in enumerate(reshaped_predictions):
         print(f"Prediction {i+1}: {pred}")
 
-    # Save the predictions
     save_predictions(predictions)
     
 if __name__ == '__main__':

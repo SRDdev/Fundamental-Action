@@ -40,7 +40,7 @@ def preprocess_data(file_path):
     targets_normalized = target_scaler.fit_transform(targets)
     
     X_train, X_val, y_train, y_val = train_test_split(
-        inputs_normalized, targets_normalized, test_size=0.2, random_state=42
+        inputs_normalized, targets_normalized, test_size=0.1,shuffle=False
     )
     
     train_dataset = TrajectoryDataset(X_train, y_train)

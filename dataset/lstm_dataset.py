@@ -1,3 +1,9 @@
+"""
+Author: Shreyas Dixit
+
+A PyTorch LSTM dataset class for loading and preprocessing data.
+"""
+
 import torch
 from torch.utils.data import Dataset, DataLoader
 import pandas as pd
@@ -27,6 +33,9 @@ class TrajectoryDataset(Dataset):
         self.samples = self.create_sequences()
 
     def create_sequences(self):
+        """
+        Create sequences of input and target data from the dataset.
+        """
         sequences = []
         for i in range(len(self.data) - self.seq_len):
             input_seq = self.data.iloc[i:i + self.seq_len, :].values  # Use all 10 columns
@@ -36,6 +45,9 @@ class TrajectoryDataset(Dataset):
             
 
     def evaluate(self, epoch):
+        """
+        Evaluate the model on the test data.
+        """
         self.model.eval()
         predictions = []
         targets = []
@@ -61,9 +73,7 @@ class TrajectoryDataset(Dataset):
         return input_tensor, target_tensor
 
 
-from sklearn.model_selection import train_test_split
-
-def create_dataloader(csv_file, seq_len, batch_size, input_size=10, target_size=4, test_split=0.2, shuffle=True):
+def create_dataloader(csv_file, seq_len, batch_size, input_size=10, target_size=4, test_split=0.15, shuffle=False):
     """
     Create DataLoaders for training and testing the model.
     

@@ -1,3 +1,8 @@
+"""
+Author: Shreyas Dixit
+
+This script trains the TrajectoryNet model on the given dataset.
+"""
 import torch
 import torch.nn as nn
 import torch.optim as optim

@@ -7,6 +7,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class TrajectoryLSTM(nn.Module):
+    """
+    A LSTM model that takes in configurable input size, hidden sizes, and outputs an 80 Point 4D Trajectory.
+    
+    Args:
+        config (dict): Configuration dictionary with model parameters like input size, hidden sizes, and output size.
+    """
     def __init__(self, config):
         super(TrajectoryLSTM, self).__init__()
 
@@ -40,7 +46,6 @@ class TrajectoryLSTM(nn.Module):
         
         return output, (hidden_state, cell_state)
 
-# Example Usage
 if __name__ == "__main__":
     import os
     import sys
@@ -52,7 +57,6 @@ if __name__ == "__main__":
 
     model = TrajectoryLSTM(config)
     
-    # Example input: [batch_size, seq_len, input_size]
     batch_size = config.get("TrajectoryLSTM.training.batch_size", 8)
     seq_len = config.get("TrajectoryLSTM.training.seq_len", 80)
 

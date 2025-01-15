@@ -32,21 +32,28 @@ class TrajectoryNet_Train:
         self.best_loss = float('inf')
         self.config = config
         self.name = config.get("TrajectoryNet.training.name")
-        
-        # Access the training configuration
+
         self.num_epochs = config.get("TrajectoryNet.training.num_epochs")
         self.early_stopping_patience = config.get("TrajectoryNet.training.early_stopping_patience")
-        
-        # Initialize Weights and Biases if enabled in the config
+        self.grad_clip_value = config.get("TrajectoryNet.training.grad_clip_value", None)
+        self.warmup_epochs = config.get("TrajectoryNet.training.warmup_epochs", 0)
+
         if self.config.get("wandb", False):
-            # Log into wandb before initializing the run
             wandb.login(key=WANDB_API_KEY)
 
-            # Now initialize the wandb run
-            run = wandb.init(project="Fundamental_Actions", config=self.config,name=self.name)
+            run = wandb.init(project="Fundamental_Actions", config=self.config, name=self.name)
             self.wandb_enabled = True
         else:
             self.wandb_enabled = False
+
+    def adjust_learning_rate(self, epoch):
+        """
+        Adjust the learning rate during warmup epochs.
+        """
+        if epoch <= self.warmup_epochs:
+            warmup_factor = epoch / self.warmup_epochs
+            for param_group in self.optimizer.param_groups:
+                param_group['lr'] = self.config.get("TrajectoryNet.training.base_lr", 0.001) * warmup_factor
 
     def train(self):
         """
@@ -61,19 +68,22 @@ class TrajectoryNet_Train:
         for epoch in range(1, self.num_epochs + 1):
             print(f"Epoch {epoch}/{self.num_epochs}")
 
-            # Training phase
+            self.adjust_learning_rate(epoch)
+
             self.model.train()
             train_loss = 0
             for inputs, targets in tqdm(self.train_loader, desc="Training"):
                 inputs, targets = inputs.to(self.device), targets.to(self.device)
 
-                # Forward pass
                 outputs = self.model(inputs)
                 loss = self.criterion(outputs, targets)
 
-                # Backward pass and optimization
                 self.optimizer.zero_grad()
                 loss.backward()
+
+                if self.grad_clip_value is not None:
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip_value)
+
                 self.optimizer.step()
 
                 train_loss += loss.item()
@@ -81,19 +91,15 @@ class TrajectoryNet_Train:
             train_loss /= len(self.train_loader)
             print(f"Train Loss: {train_loss:.4f}")
 
-            # Log training loss to wandb if enabled
             if self.wandb_enabled:
                 wandb.log({"train_loss": train_loss, "epoch": epoch})
 
-            # Validation phase
             val_loss = self.validate()
             print(f"Validation Loss: {val_loss:.4f}")
 
-            # Log validation loss to wandb if enabled
             if self.wandb_enabled:
                 wandb.log({"val_loss": val_loss, "epoch": epoch})
 
-            # Save the best model
             if val_loss < self.best_loss:
                 self.best_loss = val_loss
                 patience_counter = 0
@@ -102,7 +108,6 @@ class TrajectoryNet_Train:
             else:
                 patience_counter += 1
 
-            # Early stopping
             if patience_counter >= self.early_stopping_patience:
                 print("Early stopping triggered.")
                 break
@@ -122,7 +127,6 @@ class TrajectoryNet_Train:
             for inputs, targets in tqdm(self.val_loader, desc="Validation"):
                 inputs, targets = inputs.to(self.device), targets.to(self.device)
 
-                # Forward pass
                 outputs = self.model(inputs)
                 loss = self.criterion(outputs, targets)
 
