@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import numpy as np
 import json
 import yaml
+import csv
 
 # Ensure proper path loading for modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -87,9 +88,9 @@ def predict(model, input_data, input_scaler, target_scaler, device='cpu', use_sc
     return predictions
 
 
-def save_predictions(predictions, output_file='predictions.json'):
+def save_predictions(predictions, output_file='predictions.csv'):
     """
-    Save the predictions to a file.
+    Save the predictions to a CSV file.
 
     Args:
         predictions (numpy.ndarray): The predicted trajectory.
@@ -98,15 +99,22 @@ def save_predictions(predictions, output_file='predictions.json'):
     Returns:
         None
     """
-    # Save the predictions as a JSON file
-    with open(output_file, 'w') as f:
-        json.dump(predictions.tolist(), f)
+
+    # Reshape the predictions to 80x4
+    reshaped_predictions = predictions.reshape(80, 4)
+
+    # Save the predictions as a CSV file
+    with open(output_file, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(['x', 'y', 'z', 'c'])  # Write the header
+        writer.writerows(reshaped_predictions)
 
 def main():
     """
     Main function to load the model, scalers, and make predictions.
     """
     from config.config_loader import LoadConfig
+    
     config_path = "../config/config.yaml"
     config = LoadConfig(config_path)
     device = config.get('device', 'cpu')
@@ -124,17 +132,24 @@ def main():
         input_scaler = target_scaler = None
 
     # Example input: Locations of 2 objects (6 features)
-    example_input = np.random.rand(1, 6)  # Replace with actual input data
-
+    input_data = np.array([[-202.9524806,-828.6285971,41.35059464,-370.808101,-735.661648,104.0947533]])
+    print(input_data)
     # Make prediction
-    predictions = predict(model, example_input, input_scaler, target_scaler, device, use_scalers=USE_SCALERS)
+    predictions = predict(model, input_data, input_scaler, target_scaler, device, use_scalers=USE_SCALERS)
 
     # Print the predicted trajectory
-    print(f"Predicted Trajectory: {predictions}")
+    print("-"*100)
+    print(predictions.shape)
+    print("-"*100)
+    # Reshape the predictions to 80x4
+    reshaped_predictions = predictions.reshape(80, 4)
+
+    # Print each of the 80 predictions on a single line
+    for i, pred in enumerate(reshaped_predictions):
+        print(f"Prediction {i+1}: {pred}")
 
     # Save the predictions
     save_predictions(predictions)
-
-
+    
 if __name__ == '__main__':
     main()

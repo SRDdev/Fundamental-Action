@@ -1,20 +1,21 @@
 TrajectoryNet:
   data:
-    file_path: "dataset/sample_data.csv"
+    file_path: "dataset/dataset.csv"
     save_dir: "./checkpoints"
 
   model:
     input_size: 6
     hidden_size: 128
     output_size: 320
+    dropout: 0.25
 
   training:
-    name: "TrajectoryNet"
-    batch_size: 8
+    name: "TrajectoryNet_7"
+    batch_size: 256
     learning_rate: 0.001
-    weight_decay: 1e-4
-    num_epochs: 100
-    early_stopping_patience: 5
+    weight_decay: 1e-3
+    num_epochs: 500
+    early_stopping_patience: 500
     save_dir: "./checkpoints"
 
 TrajectoryLSTM:
@@ -25,18 +26,18 @@ TrajectoryLSTM:
   dropout: 0.2
   
   data:
-    file_path: "dataset/reshaped_dataset.csv"
+    file_path: "dataset/lstm_dataset.csv"
     save_dir: "./checkpoints"
 
   training:
-    batch_size: 8
+    batch_size: 80
     target_size: 4 
     input_size: 10
     seq_len: 80
-    epochs: 100
+    epochs: 1000
     learning_rate: 0.001
 
 
 device: "cuda"
 
-wandb: False
+wandb: True

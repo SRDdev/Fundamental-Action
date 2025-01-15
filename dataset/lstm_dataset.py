@@ -1,169 +1,9 @@
-# """
-# Author : Shreyas Dixit
-# This file converts the normal dataset into a dataset for LSTM model in PyTorch.
-# """
-# import pandas as pd
-# import numpy as np
-# from sklearn.preprocessing import MinMaxScaler
-# from sklearn.model_selection import train_test_split
-# import torch
-# from torch.utils.data import DataLoader, TensorDataset
-
-# class LSTMDataLoader:
-#     def __init__(self, csv_file, timesteps=80, features=10, target_col='p_c', batch_size=32, test_size=0.2):
-#         """
-#         Initialize the data loader.
-
-#         :param csv_file: Path to the CSV file containing the dataset.
-#         :param timesteps: The number of timesteps in each sequence (default 80).
-#         :param features: The number of features (default 10).
-#         :param target_col: The column name for the target variable (default 'p_c').
-#         :param batch_size: The batch size for training (default 32).
-#         :param test_size: Proportion of the data to use for testing (default 0.2).
-#         """
-#         self.csv_file = csv_file
-#         self.timesteps = timesteps
-#         self.features = features
-#         self.target_col = target_col
-#         self.batch_size = batch_size
-#         self.test_size = test_size
-        
-#         # Load and preprocess the dataset
-#         self.load_data()
-
-#     def load_data(self):
-#         """
-#         Load the dataset, normalize the features, and split into train/test.
-#         """
-#         # Load the dataset from the CSV file
-#         df = pd.read_csv(self.csv_file)
-        
-#         # Select features and target columns
-#         features = ['input1_x', 'input1_y', 'input1_z', 'input2_x', 'input2_y', 'input2_z', 'p_x', 'p_y', 'p_z', 'p_c']
-#         target = self.target_col
-        
-#         # Extract feature values (X) and target values (y)
-#         X = df[features].values
-#         y = df[target].values
-        
-#         # Normalize the features using MinMaxScaler
-#         scaler = MinMaxScaler(feature_range=(0, 1))
-#         X_scaled = scaler.fit_transform(X)
-
-#         # Calculate the number of samples that will be created after reshaping
-#         num_sequences = len(X_scaled) // self.timesteps
-        
-#         # Trim the data to be evenly divisible by timesteps
-#         trim_length = num_sequences * self.timesteps
-#         X_scaled = X_scaled[:trim_length]
-#         y = y[:trim_length]
-
-#         # Reshape X into sequences: [num_sequences, timesteps, features]
-#         X_sequences = X_scaled.reshape(num_sequences, self.timesteps, self.features)
-        
-#         # Modify y to have 4 output values per sequence (using the last 4 values)
-#         y_sequences = np.column_stack([y[i:i+self.timesteps][-1] for i in range(0, len(y), self.timesteps)])
-
-#         # Now split the sequences into train and test sets
-#         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-#             X_sequences, y_sequences, 
-#             test_size=self.test_size, 
-#             shuffle=False
-#         )
-
-#         # Convert to PyTorch tensors
-#         self.X_train = torch.tensor(self.X_train, dtype=torch.float32)
-#         self.X_test = torch.tensor(self.X_test, dtype=torch.float32)
-#         self.y_train = torch.tensor(self.y_train, dtype=torch.float32)
-#         self.y_test = torch.tensor(self.y_test, dtype=torch.float32)
-
-#         print(f"X_train shape: {self.X_train.shape}")
-#         print(f"X_test shape: {self.X_test.shape}")
-#         print(f"y_train shape: {self.y_train.shape}")
-#         print(f"y_test shape: {self.y_test.shape}")
-
-#     # def load_data(self):
-#     #     """
-#     #     Load the dataset, normalize the features, and split into train/test.
-#     #     """
-#     #     # Load the dataset from the CSV file
-#     #     df = pd.read_csv(self.csv_file)
-        
-#     #     # Select features and target columns
-#     #     features = ['input1_x', 'input1_y', 'input1_z', 'input2_x', 'input2_y', 'input2_z', 'p_x', 'p_y', 'p_z', 'p_c']
-#     #     target = self.target_col
-        
-#     #     # Extract feature values (X) and target values (y)
-#     #     X = df[features].values
-#     #     y = df[target].values
-        
-#     #     # Normalize the features using MinMaxScaler
-#     #     scaler = MinMaxScaler(feature_range=(0, 1))
-#     #     X_scaled = scaler.fit_transform(X)
-
-#     #     # Calculate the number of samples that will be created after reshaping
-#     #     num_sequences = len(X_scaled) // self.timesteps
-        
-#     #     # Trim the data to be evenly divisible by timesteps
-#     #     trim_length = num_sequences * self.timesteps
-#     #     X_scaled = X_scaled[:trim_length]
-#     #     y = y[:trim_length]
-
-#     #     # Reshape X into sequences: [num_sequences, timesteps, features]
-#     #     X_sequences = X_scaled.reshape(num_sequences, self.timesteps, self.features)
-        
-#     #     # For y, we need one target value per sequence
-#     #     # We'll take the last value of each sequence as the target
-#     #     y_sequences = y.reshape(num_sequences, self.timesteps)[:, -1]
-
-#     #     # Now split the sequences into train and test sets
-#     #     self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-#     #         X_sequences, y_sequences, 
-#     #         test_size=self.test_size, 
-#     #         shuffle=False
-#     #     )
-
-#     #     # Convert to PyTorch tensors
-#     #     self.X_train = torch.tensor(self.X_train, dtype=torch.float32)
-#     #     self.X_test = torch.tensor(self.X_test, dtype=torch.float32)
-#     #     self.y_train = torch.tensor(self.y_train, dtype=torch.float32)
-#     #     self.y_test = torch.tensor(self.y_test, dtype=torch.float32)
-
-#     #     print(f"X_train shape: {self.X_train.shape}")
-#     #     print(f"X_test shape: {self.X_test.shape}")
-#     #     print(f"y_train shape: {self.y_train.shape}")
-#     #     print(f"y_test shape: {self.y_test.shape}")
-
-#     def get_train_data(self):
-#         """
-#         Returns the training data.
-#         """
-#         return self.X_train, self.y_train
-
-#     def get_test_data(self):
-#         """
-#         Returns the testing data.
-#         """
-#         return self.X_test, self.y_test
-
-#     def get_train_loader(self):
-#         """
-#         Returns a PyTorch DataLoader for training data.
-#         """
-#         train_dataset = TensorDataset(self.X_train, self.y_train)
-#         return DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
-
-#     def get_test_loader(self):
-#         """
-#         Returns a PyTorch DataLoader for test data.
-#         """
-#         test_dataset = TensorDataset(self.X_test, self.y_test)
-#         return DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False)
-
 import torch
 from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 import numpy as np
+from sklearn.metrics import mean_squared_error
+import wandb
 
 class TrajectoryDataset(Dataset):
     def __init__(self, csv_file, seq_len, input_size=10, target_size=4):
@@ -178,7 +18,7 @@ class TrajectoryDataset(Dataset):
         self.seq_len = seq_len
         self.input_size = input_size
         self.target_size = target_size
-
+        self.use_wandb = False
         # Check the dataset's shape
         print(f"Columns in dataset: {self.data.columns}")
         print(f"Shape of dataset: {self.data.shape}")
@@ -187,27 +27,28 @@ class TrajectoryDataset(Dataset):
         self.samples = self.create_sequences()
 
     def create_sequences(self):
-        """
-        Create sequences of inputs and targets from the dataset.
-        """
         sequences = []
-        
-        # For each row, generate a sequence with a fixed seq_len
         for i in range(len(self.data) - self.seq_len):
-            # Input: Take 'seq_len' rows as input (all columns, including 'p_c')
-            input_seq = self.data.iloc[i:i + self.seq_len, :].values  # Take all columns
-            
-            # Ensure the input sequence has the correct number of features
-            if input_seq.shape[1] != self.input_size:
-                print(f"Warning: Expected {self.input_size} features, but got {input_seq.shape[1]} features.")
-                print(f"Input sequence (first row): {input_seq[0]}")
-
-            # Target: Take the last row's target value ('p_c')
-            target = self.data.iloc[i + self.seq_len - 1, -1]  # The last column is 'p_c'
-            
+            input_seq = self.data.iloc[i:i + self.seq_len, :].values  # Use all 10 columns
+            target = self.data.iloc[i + self.seq_len - 1, -4:].values  # Last 4 columns
             sequences.append((input_seq, target))
-        
         return sequences
+            
+
+    def evaluate(self, epoch):
+        self.model.eval()
+        predictions = []
+        targets = []
+        with torch.no_grad():
+            for batch_data, batch_labels in self.test_data_loader:
+                batch_data, batch_labels = batch_data.to(self.device), batch_labels.to(self.device)
+                output, _ = self.model(batch_data)
+                predictions.append(output.cpu().numpy())
+                targets.append(batch_labels.view(-1, 4).cpu().numpy())  # Ensure targets match output shape
+        predictions = np.concatenate(predictions, axis=0)
+        targets = np.concatenate(targets, axis=0)
+        mse = mean_squared_error(targets, predictions)
+        print(f"Test MSE after epoch {epoch+1}: {mse:.4f}")
 
     def __len__(self):
         return len(self.samples)
@@ -220,10 +61,34 @@ class TrajectoryDataset(Dataset):
         return input_tensor, target_tensor
 
 
-def create_dataloader(csv_file, seq_len, batch_size, input_size=10, target_size=4, shuffle=True):
+from sklearn.model_selection import train_test_split
+
+def create_dataloader(csv_file, seq_len, batch_size, input_size=10, target_size=4, test_split=0.2, shuffle=True):
     """
-    Create a DataLoader for training and testing the model.
+    Create DataLoaders for training and testing the model.
+    
+    Args:
+        csv_file (str): Path to the CSV file with data.
+        seq_len (int): Length of the input sequence for LSTM.
+        batch_size (int): Number of samples per batch.
+        input_size (int): Number of input features.
+        target_size (int): Number of target features to predict.
+        test_split (float): Fraction of the data to be used for testing.
+        shuffle (bool): Whether to shuffle the data.
+    
+    Returns:
+        train_loader (DataLoader): DataLoader for the training data.
+        test_loader (DataLoader): DataLoader for the testing data.
     """
     dataset = TrajectoryDataset(csv_file, seq_len, input_size, target_size)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
-    return dataloader
+    
+    # Split indices for train and test sets
+    train_size = int((1 - test_split) * len(dataset))
+    test_size = len(dataset) - train_size
+    train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
+    
+    # Create DataLoaders
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    
+    return train_loader, test_loader

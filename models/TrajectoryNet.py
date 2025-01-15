@@ -21,7 +21,7 @@ class TrajectoryNet(nn.Module):
         input_size = config.get("TrajectoryNet.model.input_size")
         hidden_size = config.get("TrajectoryNet.model.hidden_size")
         output_size = config.get("TrajectoryNet.model.output_size")
-
+        dropout = config.get("TrajectoryNet.model.dropout")
         self.fc1 = nn.Linear(input_size, hidden_size)
         self.fc2 = nn.Linear(hidden_size, hidden_size)
         self.fc3 = nn.Linear(hidden_size, hidden_size * 2)
@@ -29,7 +29,7 @@ class TrajectoryNet(nn.Module):
         self.fc5 = nn.Linear(hidden_size * 4, hidden_size * 4)
         self.fc6 = nn.Linear(hidden_size * 4, output_size)  # Output layer (80 points * 4 dimensions)
 
-        self.dropout = nn.Dropout(0.3)
+        self.dropout = nn.Dropout(dropout)
         # Create separate batch norm layers for different dimensions
         self.bn1 = nn.BatchNorm1d(hidden_size)
         self.bn2 = nn.BatchNorm1d(hidden_size)
