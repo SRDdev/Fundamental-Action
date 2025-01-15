@@ -9,19 +9,23 @@ TrajectoryNet:
     input_size: 6
     hidden_size: 128
     output_size: 320
-    dropout: 0.01
+    dropout: 0.25
 
   training:
     name: "Large_TrajectoryNet"
-    batch_size: 8
+    batch_size: 512
     base_lr: 0.001         # Base learning rate for warmup
-    learning_rate: 1e-3   # Main learning rate
-    weight_decay: 1e-3
+    learning_rate: 0.0001   # Main learning rate
+    weight_decay: 0.0001
     num_epochs: 500
     warmup_epochs: 50      # Number of warmup epochs
     grad_clip_value: 5.0   # Gradient clipping value
     early_stopping_patience: 500
     save_dir: "./checkpoints"
+
+  wandb:
+    project: "Fundamental-Actions"
+    enabled: true
 #---------------------------------------------------#
 
 TrajectoryLSTM:

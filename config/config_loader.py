@@ -1,6 +1,6 @@
 """
 Author: Shreyas Dixit
-This file loads configs
+This file loads and updates configurations.
 """
 import yaml
 
@@ -34,3 +34,22 @@ class LoadConfig:
             else:
                 return default
         return value
+
+    def update(self, updates):
+        """
+        Update the configuration with the provided key-value pairs.
+        
+        Args:
+            updates (dict): A dictionary containing configuration updates. 
+                            Keys should be in dot-separated format (e.g., 'TrajectoryNet.training.learning_rate').
+        """
+        for key, value in updates.items():
+            keys = key.split('.')
+            config_section = self.config
+            for k in keys[:-1]:
+                if k not in config_section:
+                    raise KeyError(f"Key '{k}' not found in configuration.")
+                config_section = config_section[k]
+            if keys[-1] not in config_section:
+                raise KeyError(f"Key '{keys[-1]}' not found in configuration.")
+            config_section[keys[-1]] = value
